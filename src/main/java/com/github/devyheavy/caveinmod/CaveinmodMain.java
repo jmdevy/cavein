@@ -16,5 +16,6 @@ public class CaveinmodMain {
     public CaveinmodMain() {
         LOGGER.debug("Hello World! From the cave-in mod");
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, CaveinmodConfigHandler.CAVEINMOD_CLIENT_CONFIG_SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, CaveinmodConfigHandler.CAVEINMOD_COMMON_CONFIG_SPEC);
     }
 }

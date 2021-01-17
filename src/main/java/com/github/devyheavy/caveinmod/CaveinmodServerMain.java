@@ -41,7 +41,7 @@ public class CaveinmodServerMain {
 
     @SubscribeEvent
     public static void sendConfigsToClient(EntityJoinWorldEvent event) {
-        System.out.println("SEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
+        System.out.println("****************************************SERVER***************************************************");
         System.out.println(CaveinmodConfigHandler.minSecondsToCavein);
         // Ensure new entity is player then send server config data
         if ((event.getEntity() instanceof ServerPlayerEntity)) {

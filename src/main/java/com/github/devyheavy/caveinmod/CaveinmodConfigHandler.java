@@ -8,12 +8,14 @@ import org.apache.commons.lang3.tuple.Pair;
 
 @Mod.EventBusSubscriber(modid = CaveinmodMain.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class CaveinmodConfigHandler {
-    public static final ClientConfig CAVEINMOD_CLIENT_CONFIG;
-    public static final ForgeConfigSpec CAVEINMOD_CLIENT_CONFIG_SPEC;
+
+    // ##### START OF COMMON (SERVER TO CLIENT) CONFIG (STORED IN .minecraft/world/serverconfig) #####
+    public static final CaveinModCommonConfig CAVEINMOD_COMMON_CONFIG;
+    public static final ForgeConfigSpec CAVEINMOD_COMMON_CONFIG_SPEC;
     static {
-        final Pair<ClientConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
-        CAVEINMOD_CLIENT_CONFIG_SPEC = specPair.getRight();
-        CAVEINMOD_CLIENT_CONFIG = specPair.getLeft();
+        final Pair<CaveinModCommonConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(CaveinModCommonConfig::new);
+        CAVEINMOD_COMMON_CONFIG_SPEC = specPair.getRight();
+        CAVEINMOD_COMMON_CONFIG = specPair.getLeft();
     }
 
 
@@ -23,48 +25,82 @@ public class CaveinmodConfigHandler {
     public static Integer maxCaveinYLevel;          // The highest cave-ins can appear for any player
 
 
-    @SubscribeEvent
-    public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent) {
-        if (configEvent.getConfig().getSpec() == CaveinmodConfigHandler.CAVEINMOD_CLIENT_CONFIG_SPEC) {
-            bakeConfig();
-        }
+    public static void CaveinModBakeCommonConfig() {
+        updateRateSeconds = CAVEINMOD_COMMON_CONFIG.updateRateSeconds.get();
+        minSecondsToCavein = CAVEINMOD_COMMON_CONFIG.minSecondsToCavein.get();
+        maxSecondsToCavein = CAVEINMOD_COMMON_CONFIG.maxSecondsToCavein.get();
+        maxCaveinYLevel = CAVEINMOD_COMMON_CONFIG.maxCaveinYLevel.get();
     }
 
 
-    public static void bakeConfig() {
-        updateRateSeconds = CAVEINMOD_CLIENT_CONFIG.updateRateSeconds.get();
-        minSecondsToCavein = CAVEINMOD_CLIENT_CONFIG.minSecondsToCavein.get();
-        maxSecondsToCavein = CAVEINMOD_CLIENT_CONFIG.maxSecondsToCavein.get();
-        maxCaveinYLevel = CAVEINMOD_CLIENT_CONFIG.maxCaveinYLevel.get();
-    }
-
-
-    public static class ClientConfig {
+    public static class CaveinModCommonConfig {
         public final ForgeConfigSpec.ConfigValue<Double> updateRateSeconds;         // How many seconds between doing tasks in mod
         public final ForgeConfigSpec.ConfigValue<Double> minSecondsToCavein;        // Low end of range until a cave-in can occur in seconds
         public final ForgeConfigSpec.ConfigValue<Double> maxSecondsToCavein;        // Hi end of range until a cave-in can occur in seconds
         public final ForgeConfigSpec.ConfigValue<Integer> maxCaveinYLevel;          // The highest cave-ins can appear for any player
 
-        public ClientConfig(ForgeConfigSpec.Builder builder) {
-            builder.push("Timings");
+        public CaveinModCommonConfig(ForgeConfigSpec.Builder builder) {
+            builder.push("Timings and general");
             updateRateSeconds = builder
-                    .comment("aBoolean usage description")
+                    .comment("Decimal or double value for amount of seconds between making blocks fall during cavins (larger values reduce lag/tps lag/fps lag/updates)")
                     .translation(CaveinmodMain.MODID + ".config." + "updateRateSeconds")
                     .define("updateRateSeconds", 0.05);
+
             minSecondsToCavein = builder
-                    .comment("anInt usage description")
+                    .comment("Decimal or double value for bottom range of number of seconds until a cave-in can randomly occur")
                     .translation(CaveinmodMain.MODID + ".config." + "minSecondsToCavein")
                     .define("minSecondsToCavein", 0.25);
+
             maxSecondsToCavein = builder
-                    .comment("anInt usage description")
+                    .comment("Decimal or double value for upper range of a number of seconds until a cave-in can randomly occur")
                     .translation(CaveinmodMain.MODID + ".config." + "maxSecondsToCavein")
                     .define("maxSecondsToCavein", 1.0);
+
             maxCaveinYLevel = builder
-                    .comment("anInt usage description")
+                    .comment("Integer or int value for height limit where cave-ins can occur. Cave-ins will not modify blocks above or equal to this height limit")
                     .translation(CaveinmodMain.MODID + ".config." + "maxCaveinYLevel")
                     .define("maxCaveinYLevel", 60);
             builder.pop();
         }
+    }
 
+
+
+    // ##### START OF CLIENT (ONLY CLIENT) CONFIG (STORED IN .minecraft/config) #####
+    public static final CaveinModClientConfig CAVEINMOD_CLIENT_CONFIG;
+    public static final ForgeConfigSpec CAVEINMOD_CLIENT_CONFIG_SPEC;
+    static {
+        final Pair<CaveinModClientConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(CaveinModClientConfig::new);
+        CAVEINMOD_CLIENT_CONFIG_SPEC = specPair.getRight();
+        CAVEINMOD_CLIENT_CONFIG = specPair.getLeft();
+    }
+
+
+    // Bake configs to standard values in this class since using get() and set() is costly
+    public static void CaveinModBakeClientConfig() {
+    }
+
+
+    public static class CaveinModClientConfig {
+        public CaveinModClientConfig(ForgeConfigSpec.Builder builder) {
+            builder.push("NotSettings");
+            builder.comment("Nothing here that can be controlled by clients. Look in .minecraft/world/serverconfig for configs controllable by the server")
+                    .translation(CaveinmodMain.MODID + ".config." + "Nothing")
+                    .define("Nothing", 0);
+            builder.pop();
+        }
+    }
+
+
+
+    // HANDLE CONFIG EVENT FOR BOTH CLIENT AND SERVER-CLIENT CONFIG EVENTS
+    @SubscribeEvent
+    public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent) {
+        if (configEvent.getConfig().getSpec() == CaveinmodConfigHandler.CAVEINMOD_COMMON_CONFIG_SPEC) {
+            CaveinModBakeCommonConfig();
+        }
+        if (configEvent.getConfig().getSpec() == CaveinmodConfigHandler.CAVEINMOD_CLIENT_CONFIG_SPEC) {
+            CaveinModBakeClientConfig();
+        }
     }
 }

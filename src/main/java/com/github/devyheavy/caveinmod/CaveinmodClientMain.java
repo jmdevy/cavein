@@ -50,6 +50,8 @@ public class CaveinmodClientMain {
 
     @SubscribeEvent
     public static void CaveinUpdate(TickEvent.ClientTickEvent event) {
+        System.out.println("****************************************CLIENT***************************************************");
+        System.out.println(CaveinmodConfigHandler.minSecondsToCavein);
         // Don't do anything if the player does not exist since user is in main menu of Minecraft
         if(Minecraft.getInstance().player == null){
             return;
