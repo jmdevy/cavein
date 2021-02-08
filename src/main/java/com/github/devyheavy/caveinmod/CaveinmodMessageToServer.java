@@ -7,14 +7,14 @@ import org.apache.logging.log4j.Logger;
 public class CaveinmodMessageToServer {
 
 
-    private int caveinTickDuration;                                 // Duration of cave-in, in ticks
+    public boolean startServerCavein;                              // Data sent when cave-in is to start at sending player's position
     private boolean messageIsValid;                                 // Is the received message OK?
     private static final Logger LOGGER = LogManager.getLogger();    // For outputting errors to terminal/console
 
 
     // Constructor - valid message construction - assign data, change message status
-    public CaveinmodMessageToServer(int i_caveinTickDuration) {
-        caveinTickDuration = i_caveinTickDuration;
+    public CaveinmodMessageToServer(boolean i_startServerCavein) {
+        startServerCavein = i_startServerCavein;
         messageIsValid = true;
     }
 
@@ -40,13 +40,12 @@ public class CaveinmodMessageToServer {
     public static CaveinmodMessageToServer decode(PacketBuffer buf) {
         CaveinmodMessageToServer retval = new CaveinmodMessageToServer();
         try {
-            int tickDuration = buf.readInt();           // Get duration of cave-in
-            retval.caveinTickDuration = tickDuration;   // Store in member of this class
+            retval.startServerCavein = buf.readBoolean(); ;                             // Store in member of this class
         } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
             LOGGER.warn("Exception while reading CaveinmodMessageToServer: " + e);  // Output error if needed
             return retval;
         }
-        retval.messageIsValid = true;   // Now message construction is valid
+        retval.messageIsValid = true;                                                   // Now message construction is valid
         return retval;
     }
 
@@ -59,13 +58,13 @@ public class CaveinmodMessageToServer {
      */
     public void encode(PacketBuffer buf) {
         if (!messageIsValid) return;
-        buf.writeInt(caveinTickDuration);
+        buf.writeBoolean(startServerCavein);
     }
 
 
     // Allow turning message into string in a certain way
     @Override
     public String toString()  {
-        return "CaveinmodMessageToServer[caveinTickDuration=" + caveinTickDuration + "]";
+        return "CaveinmodMessageToServer[startServerCavein=" + startServerCavein + "]";
     }
 }

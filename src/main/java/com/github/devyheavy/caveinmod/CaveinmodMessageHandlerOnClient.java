@@ -17,7 +17,7 @@ public class CaveinmodMessageHandlerOnClient {
      * Called when a message is received of the appropriate type.
      * CALLED BY THE NETWORK THREAD, NOT THE CLIENT THREAD
      */
-    public static void onMessageReceived(final CaveinmodMessageToClient message, Supplier<NetworkEvent.Context> ctxSupplier) {
+    public static void onMessageReceived(final CaveinmodCaveinMessageToClient message, Supplier<NetworkEvent.Context> ctxSupplier) {
         NetworkEvent.Context ctx = ctxSupplier.get();
         LogicalSide sideReceived = ctx.getDirection().getReceptionSide();
         ctx.setPacketHandled(true);
@@ -41,12 +41,8 @@ public class CaveinmodMessageHandlerOnClient {
     }
 
 
-    private static void processMessage(ClientWorld worldClient, CaveinmodMessageToClient message) {
-        // Set config data froms erver to client class main loop class
-        CaveinmodClientMain.setUpdateRateTicks(message.getUpdateRateTicks());
-        CaveinmodClientMain.setMinTicksToCavein(message.getMinTicksToCavein());
-        CaveinmodClientMain.setMaxTicksToCavein(message.getMaxTicksToCavein());
-        CaveinmodClientMain.setMaxCaveinYLevel(message.getMaxCaveinYLevel());
+    private static void processMessage(ClientWorld worldClient, CaveinmodCaveinMessageToClient message) {
+
         return;
     }
 

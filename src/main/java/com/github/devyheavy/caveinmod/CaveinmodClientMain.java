@@ -2,6 +2,7 @@ package com.github.devyheavy.caveinmod;
 
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.util.math.vector.Vector3d;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;            // @EventBusSubscriber
 import net.minecraftforge.eventbus.api.SubscribeEvent;                  // @SubscribeEvent
@@ -12,71 +13,46 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;                  // @Subs
 @EventBusSubscriber(modid = CaveinmodMain.MODID, bus = EventBusSubscriber.Bus.FORGE)
 public class CaveinmodClientMain {
 
-
-    //
-    // Default itmes resulting from config values (set using data from server in client packet handler)
-    //
-    private static int updateRateTicks;             // Number of server ticks between updates (truncated for int)
-    private static int minTicksToCavein;            // Low end of range until a cave-in can occur in ticks
-    private static int maxTicksToCavein;            // Hi end of range until a cave-in can occur in ticks
-    private static int maxCaveinYLevel;             // The highest cave-ins can appear for any player
-
-
-    //
     // Internal items used for for tracking
-    //
-    private static int ticksPassedToUpdate = 0;     // Number of ticks that have passed since last update (reset to 0 every updateRateTicks ticks)
-    private static int currentTicksToCavein = 0;    // Number randomly assigned to number in range of minTicksToCavein & maxTicksToCavein
-    private static int ticksPassedToCavein = -1;    // Related to minTicksToCavein & maxTicksToCavein and is used to count to random number in that range
+    private static int currentTicksToCavein = 0;                // Number randomly assigned to number in range of minTicksToCavein & maxTicksToCavein
+    private static int ticksPassedToCavein = -1;                // Related to minTicksToCavein & maxTicksToCavein and is used to count to random number in that range
+    private static boolean isScreenCurrentlyShaking = false;    // When set true, player eye position shakes relative to head origin
+    final static private float maxCameraPitchVariation = 0.75f;
+    final static private float minCameraPitchVariation = -0.75f;
+    final static private float maxCameraYawVariation = 0.75f;
+    final static private float minCameraYawVariation = -0.75f;
 
 
-    //
-    // Mostly used to set client-side config values when received from server
-    // in CaveinmodMessagehandlerOnClient sent from CaveinmodServerMain
-    //
-    public static void setUpdateRateTicks(int i_updateRateTicks){
-        updateRateTicks = i_updateRateTicks;
-    }
-    public static void setMinTicksToCavein(int i_minTicksToCavein){
-        minTicksToCavein = i_minTicksToCavein;
-    }
-    public static void setMaxTicksToCavein(int i_maxTicksToCavein){
-        maxTicksToCavein = i_maxTicksToCavein;
-    }
-    public static void setMaxCaveinYLevel(int i_maxCaveinYLevel){
-        maxTicksToCavein = i_maxCaveinYLevel;
+    // Varies pitch, yaw, and position based on the intensity of the cave-in
+    public static void CaveinmodShakePlayer() {
+        float addedPitch = (float) ((Math.random() * (maxCameraPitchVariation - minCameraPitchVariation)) + minCameraPitchVariation);
+        float addedYaw = (float) ((Math.random() * (maxCameraYawVariation - minCameraYawVariation)) + minCameraYawVariation);
+        Minecraft.getInstance().player.rotationPitch += addedPitch;
+        Minecraft.getInstance().player.rotationYaw += addedYaw;
+        Minecraft.getInstance().player.moveRelative(0.05f, new Vector3d(addedPitch, 0, addedYaw));
     }
 
 
     @SubscribeEvent
-    public static void CaveinUpdate(TickEvent.ClientTickEvent event) {
-        System.out.println("****************************************CLIENT***************************************************");
-        System.out.println(CaveinmodConfigHandler.minSecondsToCavein);
+    public static void CaveinmodUpdate(TickEvent.ClientTickEvent event) {
         // Don't do anything if the player does not exist since user is in main menu of Minecraft
-        if(Minecraft.getInstance().player == null){
+        if(Minecraft.getInstance().player == null) {
             return;
         }
-
+        //CaveinmodShakePlayer();
         // Only update ticks at end of phase (between START & END a snap-back due to poor TPS can happen)
         // and this ensures the blocks are the most up to date when picking ones to fall
         if(event.phase == TickEvent.Phase.END) {
-            // Only update client tracking of cave-ins every updateRateTicks set by mod user
-            if(ticksPassedToUpdate >= updateRateTicks) {
-
-                // Chance of cave-in can occur now
-                if(ticksPassedToCavein >= currentTicksToCavein){
-                    // Last check, only do cave-ins if player is below max limit
-                    if(Minecraft.getInstance().player.getPosition().getY() < maxCaveinYLevel) {
-                        CaveinmodMessageToServer caveinMessageToServer = new CaveinmodMessageToServer(10);
-                        CaveinmodPacketHandler.simpleChannel.sendToServer(caveinMessageToServer);
-                        currentTicksToCavein = (int) ((Math.random() * (maxTicksToCavein - minTicksToCavein)) + minTicksToCavein);  // New amount of ticks until cave-in chance
-                        ticksPassedToCavein = 0;    // Cave-in had chance to occur, reset
-                        //System.out.println(Minecraft.getInstance().player.getName().getString());
-                    }
+            // Chance of cave-in can occur now
+            if(ticksPassedToCavein >= currentTicksToCavein){
+                // Last check, only do cave-ins if player is below max limit
+                if(Minecraft.getInstance().player.getPosition().getY() < CaveinmodConfigHandler.maxCaveinYLevel) {
+                    CaveinmodMessageToServer caveinMessageToServer = new CaveinmodMessageToServer(true);
+                    CaveinmodPacketHandler.simpleChannel.sendToServer(caveinMessageToServer);
+                    currentTicksToCavein = (int) ((Math.random() * (CaveinmodConfigHandler.maxTicksToCavein - CaveinmodConfigHandler.minTicksToCavein)) + CaveinmodConfigHandler.minTicksToCavein);  // New amount of ticks until cave-in chance
+                    ticksPassedToCavein = 0;    // Cave-in had chance to occur, reset
                 }
-                ticksPassedToUpdate = 0;    // Update occured, reset
             }
-            ticksPassedToUpdate++;  // Reset every updateRateTicks (partially dictates ticksPassedToCavein)
             ticksPassedToCavein++;  // Reset every currentTicksToCavein but depends on ticksPassedToUpdate
         }
     }

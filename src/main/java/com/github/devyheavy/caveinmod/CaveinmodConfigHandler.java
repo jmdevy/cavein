@@ -19,10 +19,16 @@ public class CaveinmodConfigHandler {
     }
 
 
-    public static Double updateRateSeconds;         // How many seconds between doing tasks in mod
-    public static Double minSecondsToCavein;        // Low end of range until a cave-in can occur in seconds
-    public static Double maxSecondsToCavein;        // Hi end of range until a cave-in can occur in seconds
+    private static Double updateRateSeconds;         // How many seconds between doing tasks in mod
+    private static Double minSecondsToCavein;        // Low end of range until a cave-in can occur in seconds
+    private static Double maxSecondsToCavein;        // Hi end of range until a cave-in can occur in seconds
     public static Integer maxCaveinYLevel;          // The highest cave-ins can appear for any player
+
+    // Items resulting from config values
+    public static int TICKS_PER_SECOND = 20; // How many server ticks in each second (20 Hz)
+    public static int updateRateTicks;       // Number of server ticks between updates (truncated for int)
+    public static int minTicksToCavein;      // Low end of range until a cave-in can occur in ticks
+    public static int maxTicksToCavein;      // Hi end of range until a cave-in can occur in ticks
 
 
     public static void CaveinModBakeCommonConfig() {
@@ -30,6 +36,11 @@ public class CaveinmodConfigHandler {
         minSecondsToCavein = CAVEINMOD_COMMON_CONFIG.minSecondsToCavein.get();
         maxSecondsToCavein = CAVEINMOD_COMMON_CONFIG.maxSecondsToCavein.get();
         maxCaveinYLevel = CAVEINMOD_COMMON_CONFIG.maxCaveinYLevel.get();
+
+        // Do some conversions so other classes do not have to
+        updateRateTicks = (int) (TICKS_PER_SECOND * updateRateSeconds);
+        minTicksToCavein = (int) (TICKS_PER_SECOND * minSecondsToCavein);
+        maxTicksToCavein = (int) (TICKS_PER_SECOND * maxSecondsToCavein);
     }
 
 
@@ -42,19 +53,19 @@ public class CaveinmodConfigHandler {
         public CaveinModCommonConfig(ForgeConfigSpec.Builder builder) {
             builder.push("Timings and general");
             updateRateSeconds = builder
-                    .comment("Decimal or double value for amount of seconds between making blocks fall during cavins (larger values reduce lag/tps lag/fps lag/updates)")
+                    .comment("Decimal or double value for amount of seconds between making blocks fall during caveins (larger values reduce lag/tps lag/fps lag/updates)")
                     .translation(CaveinmodMain.MODID + ".config." + "updateRateSeconds")
                     .define("updateRateSeconds", 0.05);
 
             minSecondsToCavein = builder
                     .comment("Decimal or double value for bottom range of number of seconds until a cave-in can randomly occur")
                     .translation(CaveinmodMain.MODID + ".config." + "minSecondsToCavein")
-                    .define("minSecondsToCavein", 0.25);
+                    .define("minSecondsToCavein", 10.25);
 
             maxSecondsToCavein = builder
                     .comment("Decimal or double value for upper range of a number of seconds until a cave-in can randomly occur")
                     .translation(CaveinmodMain.MODID + ".config." + "maxSecondsToCavein")
-                    .define("maxSecondsToCavein", 1.0);
+                    .define("maxSecondsToCavein", 21.0);
 
             maxCaveinYLevel = builder
                     .comment("Integer or int value for height limit where cave-ins can occur. Cave-ins will not modify blocks above or equal to this height limit")
@@ -63,7 +74,6 @@ public class CaveinmodConfigHandler {
             builder.pop();
         }
     }
-
 
 
     // ##### START OF CLIENT (ONLY CLIENT) CONFIG (STORED IN .minecraft/config) #####

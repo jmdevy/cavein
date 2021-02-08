@@ -17,8 +17,8 @@ import static net.minecraftforge.fml.network.NetworkDirection.PLAY_TO_CLIENT;
 public class CaveinmodPacketHandler {
 
 
-    public static final byte  CAVEIN_MESSAGE_ID = 35;               // Unique ID for this message type (don't use 0, easier to detect errors this way)
-    public static final byte  CONFIG_MESSAGE_ID = 36;               // Unique ID for this message type (don't use 0, easier to detect errors this way)
+    public static final byte CAVEIN_TO_SERVER_MESSAGE_ID = 35;     // Unique ID for this message type (don't use 0, easier to detect errors this way)
+    public static final byte CAVEIN_TO_CLIENT_MESSAGE_ID = 36;     // Unique ID for this message type (don't use 0, easier to detect errors this way)
     public static final String MESSAGE_PROTOCOL_VERSION = "1.0";    // A version number protocol, can be used to maintain backward compatibility
 
 
@@ -35,14 +35,14 @@ public class CaveinmodPacketHandler {
                                                          CaveinmodMessageHandlerOnClient::isThisProtocolAcceptedByClient,
                                                          CaveinmodMessageHandlerOnServer::isThisProtocolAcceptedByServer);
 
-        // Register one type of message/packet for server -> client data transfer
-        simpleChannel.registerMessage(CONFIG_MESSAGE_ID, CaveinmodMessageToClient.class,
-            CaveinmodMessageToClient::encode, CaveinmodMessageToClient::decode,
+        // Register type of message/packet for server -> client data transfer
+        simpleChannel.registerMessage(CAVEIN_TO_CLIENT_MESSAGE_ID, CaveinmodCaveinMessageToClient.class,
+            CaveinmodCaveinMessageToClient::encode, CaveinmodCaveinMessageToClient::decode,
             CaveinmodMessageHandlerOnClient::onMessageReceived,
             Optional.of(PLAY_TO_CLIENT));
 
-        // Register one type of message/packet for client -> server data transfer
-        simpleChannel.registerMessage(CAVEIN_MESSAGE_ID, CaveinmodMessageToServer.class,
+        // Register type of message/packet for client -> server data transfer
+        simpleChannel.registerMessage(CAVEIN_TO_SERVER_MESSAGE_ID, CaveinmodMessageToServer.class,
             CaveinmodMessageToServer::encode, CaveinmodMessageToServer::decode,
             CaveinmodMessageHandlerOnServer::onMessageReceived,
             Optional.of(PLAY_TO_SERVER));

@@ -33,6 +33,8 @@ public class CaveinmodMessageHandlerOnServer {
 
     private static final Logger LOGGER = LogManager.getLogger();    // For outputting errors to terminal/console
 
+    // For every cave-in event from clients received, increase this number and send along to all clients
+    public static int unqiueCaveinID = 0;
 
     /**
      * Called when a message is received of the appropriate type.
@@ -68,33 +70,21 @@ public class CaveinmodMessageHandlerOnServer {
 
     // This message is called from the Server thread (not the network thread like onMessageReceived)
     static void processMessage(CaveinmodMessageToServer message, ServerPlayerEntity sendingPlayer) {
-        World sendingPlayerWorld = sendingPlayer.world;
-        Chunk sendingPlayerChunk = sendingPlayerWorld.getChunkAt(sendingPlayer.getPosition());
-        int chunkGlobalPosX = sendingPlayerChunk.getPos().asBlockPos().getX();
-        int chunkGlobalPosZ = sendingPlayerChunk.getPos().asBlockPos().getZ();
+        // Make new cave-in instance if the message says contains true for cave-in occurance
+        if(message.startServerCavein) {
+            CaveinmodCaveinInstance newCaveinInstance = new CaveinmodCaveinInstance(sendingPlayer);
+            // Add this cave-in instance to the list in CaveinmodServerMain that processes cave-ins and the blocks falling
+            CaveinmodServerMain.AddCaveinInstanceToActive(newCaveinInstance);
 
-        // Define volume that will be searched for to make blocks fall
-        int xmin = chunkGlobalPosX;
-        int xmax = chunkGlobalPosX + 16;
-        int ymin = sendingPlayer.getPosition().getY() - distanceBelowPlayerToCavein;
-        int ymax = sendingPlayer.getPosition().getY() + distanceAbovePlayerToCavein;
-        int zmin = chunkGlobalPosZ;
-        int zmax = chunkGlobalPosZ + 16;
-
-        for(int i = 0; i < 1000; i++){
-            int x = (int) ((Math.random() * (xmax - xmin)) + xmin);
-            int y = (int) ((Math.random() * (ymax - ymin)) + ymin);
-            int z = (int) ((Math.random() * (zmax - zmin)) + zmin);
-
-            Material blockToFallMaterial = sendingPlayerChunk.getBlockState(new BlockPos(x,y,z)).getMaterial();
-            Material blockBelowToFallmaterial = sendingPlayerChunk.getBlockState(new BlockPos(x,y-1,z)).getMaterial();
-
-            if(blockToFallMaterial != Material.AIR && blockBelowToFallmaterial == Material.AIR){
-                sendingPlayerChunk.setBlockState(new BlockPos(x,y,z), Blocks.GRAVEL.getDefaultState(), true);
-                System.out.println("Falling!");
-            }
-
-            //System.out.println(sendingPlayerChunk.getBlockState(new BlockPos(x,y,z)).getBlock().getNameTextComponent().getString());
+            // Send cave-in start notification and position to all already connected clients.
+            // End notification is sent when processCavein terminates. Newly joined players are
+            // handed cave-in start notification and position by CaveinmodServerMain for join events
+            CaveinmodCaveinMessageToClient msg = new CaveinmodCaveinMessageToClient(newCaveinInstance.caveinIntensity,
+                    newCaveinInstance.caveinOriginPosition.x,
+                    newCaveinInstance.caveinOriginPosition.y,
+                    newCaveinInstance.caveinOriginPosition.z,
+                    unqiueCaveinID);
+            unqiueCaveinID++;
         }
         return;
     }
