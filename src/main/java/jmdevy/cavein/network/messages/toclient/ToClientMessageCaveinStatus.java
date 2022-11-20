@@ -2,17 +2,53 @@ package jmdevy.cavein.network.messages.toclient;
 
 import jmdevy.cavein.Cavein;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.network.NetworkEvent;
+
+import java.util.function.Supplier;
 
 public class ToClientMessageCaveinStatus {
-    public static final byte ID = 35;     // Unique ID for this message type (don't use 0, easier to detect errors this way)
-
-    private boolean messageIsValid; // Is the received message OK?
+    // Specific to messages data (ID needs to be unique to every message server or client)
+    public static final byte ID = 35;
+    public static ToClientMessageCaveinStatus lastReceivedMessage = new ToClientMessageCaveinStatus(false, 0, 0, 0, 0);
+    private boolean messageIsValid;
 
     public boolean active;
     public int caveinOriginX;
     public int caveinOriginY;
     public int caveinOriginZ;
     public int caveinRadius;
+
+
+
+    /**
+     * Called when a message is received of the appropriate type.
+     * CALLED BY THE NETWORK THREAD, NOT THE CLIENT THREAD
+     */
+    public static void onMessageReceived(final ToClientMessageCaveinStatus message, Supplier<NetworkEvent.Context> ctxSupplier) {
+        NetworkEvent.Context ctx = ctxSupplier.get();
+        LogicalSide sideReceived = ctx.getDirection().getReceptionSide();
+        ctx.setPacketHandled(true);
+
+        if (sideReceived != LogicalSide.CLIENT) {
+            Cavein.LOGGER.warn("ToClientMessageCaveinStatus received on wrong side:" + ctx.getDirection().getReceptionSide());
+            return;
+        }
+
+        if (!message.isMessageValid()) {
+            Cavein.LOGGER.warn("ToClientMessageCaveinStatus was invalid" + message.toString());
+            return;
+        }
+
+        ctx.enqueueWork(() -> processMessage(message));
+    }
+
+    // CALLED ON MAIN CLIENT THREAD, NOT NETWORK
+    private static void processMessage(ToClientMessageCaveinStatus message) {
+        lastReceivedMessage = message;
+    }
+
+
 
     // Constructor - valid message construction - assign data, change message status
     public ToClientMessageCaveinStatus(boolean _active, int _caveinOriginX, int _caveinOriginY, int _caveinOriginZ, int _caveinRadius) {
