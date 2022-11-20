@@ -2,6 +2,7 @@ package jmdevy.cavein.network;
 
 import jmdevy.cavein.Cavein;
 import jmdevy.cavein.network.messages.toclient.ToClientMessageCaveinStatus;
+import jmdevy.cavein.network.messages.toclient.ToClientMessageShake;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -34,6 +35,11 @@ public class MessageRegistration {
         channel.registerMessage(ToClientMessageCaveinStatus.ID, ToClientMessageCaveinStatus.class,
                 ToClientMessageCaveinStatus::encode, ToClientMessageCaveinStatus::decode,
                 ToClientMessageCaveinStatus::onMessageReceived,
+                Optional.of(PLAY_TO_CLIENT));
+
+        channel.registerMessage(ToClientMessageShake.ID, ToClientMessageShake.class,
+                ToClientMessageShake::encode, ToClientMessageShake::decode,
+                ToClientMessageShake::onMessageReceived,
                 Optional.of(PLAY_TO_CLIENT));
 //
 //        // Register type of message/packet for client -> server data transfer

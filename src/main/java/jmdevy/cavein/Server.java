@@ -3,6 +3,7 @@ package jmdevy.cavein;
 import jmdevy.cavein.config.ServerConfigHandler;
 import jmdevy.cavein.network.MessageRegistration;
 import jmdevy.cavein.network.messages.toclient.ToClientMessageCaveinStatus;
+import jmdevy.cavein.network.messages.toclient.ToClientMessageShake;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -124,6 +125,17 @@ public class Server {
                 if(entity.isRemoved()){
                     entity.playSound(SoundEvents.STONE_FALL);
                     entities.remove(iex);
+
+                    // Check if any player is within range to be shaken by block falling
+                    List<ServerPlayer> players = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers();
+                    for(int ipx=0; ipx<players.size(); ipx++) {
+                        ServerPlayer player = players.get(ipx);
+                        double distance = player.distanceTo(entity);
+                        Cavein.LOGGER.debug(String.valueOf(distance));
+                        if(distance < 10.0){
+                            MessageRegistration.channel.send(PacketDistributor.PLAYER.with(() -> player), new ToClientMessageShake(true));
+                        }
+                    }
                 }
             }
 
@@ -132,7 +144,6 @@ public class Server {
 
             // If cave in still happening, make blocks fall, otherwise, go back to checking
             if(currentCaveinCheckSecond-lastCaveinCheckSecond < caveinDurationSeconds){
-                Cavein.LOGGER.debug(String.valueOf(caveinDurationSeconds));
 
                 // Generate random point in circle
                 double r = ServerConfigHandler.SERVER_CONFIG.caveinRadius.get() * Math.sqrt(random.nextFloat());
