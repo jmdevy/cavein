@@ -4,7 +4,7 @@ import jmdevy.cavein.Cavein;
 import net.minecraftforge.common.ForgeConfigSpec;
 
 
-public class ServerConfig {
+public class CommonConfig {
     public final ForgeConfigSpec.ConfigValue<String> whitelistedBlocks;
 
     public final ForgeConfigSpec.ConfigValue<Integer> caveinRadius;             // Radius of area of that cave in occurs in
@@ -18,7 +18,7 @@ public class ServerConfig {
     public final ForgeConfigSpec.ConfigValue<Double> relativeShakeMovement;
 
 
-    public ServerConfig(ForgeConfigSpec.Builder builder) {
+    public CommonConfig(ForgeConfigSpec.Builder builder) {
         builder.push("Timings and general");
         whitelistedBlocks = builder
                 .comment("Integer or int value for number of seconds until a cave-in can randomly occur per player")

@@ -1,8 +1,7 @@
 package jmdevy.cavein;
 
-import jmdevy.cavein.config.ServerConfigHandler;
+import jmdevy.cavein.config.CommonConfigHandler;
 import jmdevy.cavein.network.MessageRegistration;
-import jmdevy.cavein.network.messages.toclient.ToClientMessageCaveinStatus;
 import jmdevy.cavein.network.messages.toclient.ToClientMessageShake;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -20,7 +19,6 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import java.util.List;
 import java.util.Random;
 import java.util.Vector;
-import java.util.function.Supplier;
 
 @Mod.EventBusSubscriber(modid = Cavein.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.DEDICATED_SERVER)
 public class Server {
@@ -51,7 +49,7 @@ public class Server {
     @SubscribeEvent
     public static void update(TickEvent.ServerTickEvent event) {
         if(whitelistedBlocks == null){
-            String whitelistedBlocksStr = ServerConfigHandler.SERVER_CONFIG.whitelistedBlocks.get();
+            String whitelistedBlocksStr = CommonConfigHandler.COMMON_CONFIG.whitelistedBlocks.get();
             whitelistedBlocksStr = whitelistedBlocksStr.substring(1, whitelistedBlocksStr.length()-1);
             whitelistedBlocks = List.of(whitelistedBlocksStr.split(","));
         }
@@ -64,14 +62,6 @@ public class Server {
             checkStartCavein(event);
         }else if(currentState == STATE.CAVING){
             doCavein(event);
-        }
-    }
-
-
-    private static void sendMessageToAllPlayers(List<ServerPlayer> players, ToClientMessageCaveinStatus message){
-        for(int ipx=0; ipx<players.size(); ipx++){
-            ServerPlayer player = players.get(ipx);
-            MessageRegistration.channel.send(PacketDistributor.PLAYER.with(() -> player), message);
         }
     }
 
@@ -89,18 +79,18 @@ public class Server {
             long currentCaveinCheckSecond = currentCaveinTickCount / Cavein.ticksPerSecond;
 
             // It's been long enough according to the server config values, see if chance starts a cave-in
-            if(currentCaveinCheckSecond-lastCaveinCheckSecond > ServerConfigHandler.SERVER_CONFIG.secondsToCavein.get()){
+            if(currentCaveinCheckSecond-lastCaveinCheckSecond > CommonConfigHandler.COMMON_CONFIG.secondsToCavein.get()){
 
                 // Randomly check if cave in should start, if so, change state and save some random values for later usage
-                if((int)(Math.random() * ServerConfigHandler.SERVER_CONFIG.caveinChance.get()) == 1){
+                if((int)(Math.random() * CommonConfigHandler.COMMON_CONFIG.caveinChance.get()) == 1){
                     List<ServerPlayer> players = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers();
 
                     // Only actually cave in if there is at least one player
                     if(players.size() > 0) {
                         currentState = STATE.CAVING;
 
-                        int minSeconds = ServerConfigHandler.SERVER_CONFIG.minCaveinDurationSeconds.get();
-                        int maxSeconds = ServerConfigHandler.SERVER_CONFIG.maxCaveinDurationSeconds.get();
+                        int minSeconds = CommonConfigHandler.COMMON_CONFIG.minCaveinDurationSeconds.get();
+                        int maxSeconds = CommonConfigHandler.COMMON_CONFIG.maxCaveinDurationSeconds.get();
 
                         // Generate random cave in attribute
                         caveinDurationSeconds = minSeconds + random.nextInt(maxSeconds - minSeconds + 1);
@@ -146,7 +136,7 @@ public class Server {
             if(currentCaveinCheckSecond-lastCaveinCheckSecond < caveinDurationSeconds){
 
                 // Generate random point in circle
-                double r = ServerConfigHandler.SERVER_CONFIG.caveinRadius.get() * Math.sqrt(random.nextFloat());
+                double r = CommonConfigHandler.COMMON_CONFIG.caveinRadius.get() * Math.sqrt(random.nextFloat());
                 double theta = random.nextFloat() * 2 * Math.PI;
                 int x = (int)(caveinOrigin.x + r * Math.cos(theta));
                 int y = ((int)caveinOrigin.y) - caveinSizeBelow;
@@ -154,7 +144,7 @@ public class Server {
 
                 // Search bottom to top of cave in circle for blocks that have air or water under them
                 for(int iyx=0; iyx<caveinSizeBelow+caveinSizeAbove; iyx++){
-                    if(iyx+y < ServerConfigHandler.SERVER_CONFIG.maxCaveinYLevel.get()) {
+                    if(iyx+y < CommonConfigHandler.COMMON_CONFIG.maxCaveinYLevel.get()) {
                         BlockPos block = new BlockPos(x, iyx + y, z);
                         String blockStr = event.getServer().overworld().getBlockState(block).getBlock().toString();
 
@@ -175,7 +165,6 @@ public class Server {
                 // Cave in over, stop
                 currentState = STATE.CHECKING;
                 lastCaveinTickCount = currentCaveinTickCount;
-                sendMessageToAllPlayers(ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers(), new ToClientMessageCaveinStatus(false, 0, 0, 0, 0));
             }
         }
     }
