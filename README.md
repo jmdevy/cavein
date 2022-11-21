@@ -9,7 +9,7 @@ At certain intervals a cave in may randomly start for one player in the overworl
 
 Certain aspects of the mod can be reconfigured in the .minecraft/config/cavein-common.toml config file.
 
-The default configuration potentially starts a cave in every 5 minutes at a 1 in 30 chance. The cave ins cave a 30 block radius by default, and will only occur under a block height of 50. There are other options too, see the referenced config file.
+The default configuration potentially starts a cave in every 5 minutes at a 1 in 30 chance. The cave ins occupy a 30 block radius by default, and will only occur under a block height of 50. See the referenced config file for other options.
 
 ## Building
 1. `git clone https://github.com/jmdevy/cavein.git`
