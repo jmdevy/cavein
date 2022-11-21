@@ -118,7 +118,6 @@ public class Server {
                     for(int ipx=0; ipx<players.size(); ipx++) {
                         ServerPlayer player = players.get(ipx);
                         double distance = player.distanceTo(entity);
-                        Cavein.LOGGER.debug(String.valueOf(distance));
                         if(distance < 10.0){
                             MessageRegistration.channel.send(PacketDistributor.PLAYER.with(() -> player), new ToClientMessageShake(true, CommonConfigHandler.COMMON_CONFIG.relativeShakeAmount.get()));
                         }
