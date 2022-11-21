@@ -132,30 +132,32 @@ public class Server {
             // If cave in still happening, make blocks fall, otherwise, go back to checking
             if(currentCaveinCheckSecond-lastCaveinCheckSecond < caveinDurationSeconds){
 
-                // Generate random point in circle
-                double r = CommonConfigHandler.COMMON_CONFIG.caveinRadius.get() * Math.sqrt(random.nextFloat());
-                double theta = random.nextFloat() * 2 * Math.PI;
-                int x = (int)(caveinOrigin.x + r * Math.cos(theta));
-                int y = ((int)caveinOrigin.y) - CommonConfigHandler.COMMON_CONFIG.caveinHeightBelow.get();
-                int z = (int)(caveinOrigin.z + r * Math.sin(theta));
+                for(int ifx=0; ifx<CommonConfigHandler.COMMON_CONFIG.blockCountToFallPerTick.get(); ifx++) {
+                    // Generate random point in circle
+                    double r = CommonConfigHandler.COMMON_CONFIG.caveinRadius.get() * Math.sqrt(random.nextFloat());
+                    double theta = random.nextFloat() * 2 * Math.PI;
+                    int x = (int) (caveinOrigin.x + r * Math.cos(theta));
+                    int y = ((int) caveinOrigin.y) - CommonConfigHandler.COMMON_CONFIG.caveinHeightBelow.get();
+                    int z = (int) (caveinOrigin.z + r * Math.sin(theta));
 
-                // Search bottom to top of cave in circle for blocks that have air or water under them
-                for(int iyx=0; iyx<CommonConfigHandler.COMMON_CONFIG.caveinHeightBelow.get()+CommonConfigHandler.COMMON_CONFIG.caveinHeightAbove.get(); iyx++){
-                    if(iyx+y < CommonConfigHandler.COMMON_CONFIG.maxCaveinYLevel.get()) {
-                        BlockPos block = new BlockPos(x, iyx + y, z);
-                        String blockStr = event.getServer().overworld().getBlockState(block).getBlock().toString();
+                    // Search bottom to top of cave in circle for blocks that have air or water under them
+                    for (int iyx = 0; iyx < CommonConfigHandler.COMMON_CONFIG.caveinHeightBelow.get() + CommonConfigHandler.COMMON_CONFIG.caveinHeightAbove.get(); iyx++) {
+                        if (iyx + y < CommonConfigHandler.COMMON_CONFIG.maxCaveinYLevel.get()) {
+                            BlockPos block = new BlockPos(x, iyx + y, z);
+                            String blockStr = event.getServer().overworld().getBlockState(block).getBlock().toString();
 
-                        BlockPos blockBelow = new BlockPos(x, iyx + y - 1, z);
-                        Material blockBelowMat = event.getServer().overworld().getBlockState(blockBelow).getMaterial();
+                            BlockPos blockBelow = new BlockPos(x, iyx + y - 1, z);
+                            Material blockBelowMat = event.getServer().overworld().getBlockState(blockBelow).getMaterial();
 
-                        if (checkIfWhitelisted(blockStr) && (blockBelowMat == Material.AIR || blockBelowMat == Material.WATER)) {
-                            FallingBlockEntity entity = FallingBlockEntity.fall(event.getServer().overworld(), block, event.getServer().overworld().getBlockState(block));
-                            entities.add(entity);
+                            if (checkIfWhitelisted(blockStr) && (blockBelowMat == Material.AIR || blockBelowMat == Material.WATER)) {
+                                FallingBlockEntity entity = FallingBlockEntity.fall(event.getServer().overworld(), block, event.getServer().overworld().getBlockState(block));
+                                entities.add(entity);
+                                break;
+                            }
+                        } else {
+                            // Went above limit, stop searching
                             break;
                         }
-                    }else{
-                        // Went above limit, stop searching
-                        break;
                     }
                 }
             }else{
