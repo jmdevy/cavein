@@ -15,6 +15,7 @@ public class ToClientMessageShake {
     private boolean messageIsValid;
 
     public boolean shake;
+    public double shakeAmount;
 
 
 
@@ -43,15 +44,17 @@ public class ToClientMessageShake {
     // CALLED ON MAIN CLIENT THREAD, NOT NETWORK
     private static void processMessage(ToClientMessageShake message) {
         if(message.shake) {
-            float shakeX = (float) ((Math.random() * (0.5f + 0.5f)) - 0.5f);
-            float shakeZ = (float) ((Math.random() * (0.5f + 0.5f)) - 0.5f);
+            double shakeAmount = message.shakeAmount;
+            float shakeX = (float) ((Math.random() * (shakeAmount + shakeAmount)) - shakeAmount);
+            float shakeZ = (float) ((Math.random() * (shakeAmount + shakeAmount)) - shakeAmount);
             Minecraft.getInstance().player.moveRelative(0.05f, new Vec3(shakeX, 0, shakeZ));
         }
     }
 
     // Constructor - valid message construction - assign data, change message status
-    public ToClientMessageShake(boolean _shake) {
+    public ToClientMessageShake(boolean _shake, double _shakeAmount) {
         shake = _shake;
+        shakeAmount = _shakeAmount;
         messageIsValid = true;
     }
 
@@ -76,6 +79,7 @@ public class ToClientMessageShake {
         ToClientMessageShake retval = new ToClientMessageShake();
         try {
             retval.shake = buf.readBoolean();
+            retval.shakeAmount = buf.readDouble();
         } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
             Cavein.LOGGER.warn("Exception while reading ToClientMessageShake: " + e);
             return retval;
@@ -93,12 +97,15 @@ public class ToClientMessageShake {
     public void encode(FriendlyByteBuf buf) {
         if (!messageIsValid) return;
         buf.writeBoolean(shake);
+        buf.writeDouble(shakeAmount);
     }
 
     // Allow turning message into string in a certain way
     @Override
     public String toString()  {
         return "ToClientMessageShake[" +
-                "active=" + shake + "]";
+                "shake=" + shake +
+                "shakeAmount=" + shakeAmount +
+                "]";
     }
 }

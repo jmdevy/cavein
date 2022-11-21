@@ -8,6 +8,8 @@ public class CommonConfig {
     public final ForgeConfigSpec.ConfigValue<String> whitelistedBlocks;
 
     public final ForgeConfigSpec.ConfigValue<Integer> caveinRadius;             // Radius of area of that cave in occurs in
+    public final ForgeConfigSpec.ConfigValue<Integer> caveinHeightBelow;        // How many blocks below the player to search for cave-able blocks
+    public final ForgeConfigSpec.ConfigValue<Integer> caveinHeightAbove;        // How many blocks above the player to search for cave-able blocks
     public final ForgeConfigSpec.ConfigValue<Integer> secondsToCavein;          // Seconds until a cave-in can potentially be triggered on client
     public final ForgeConfigSpec.ConfigValue<Integer> caveinChance;             // Chance of a cave-in occurring every secondsToCavein per player
     public final ForgeConfigSpec.ConfigValue<Integer> maxCaveinYLevel;          // The highest cave-ins can appear for any player
@@ -15,7 +17,7 @@ public class CommonConfig {
     public final ForgeConfigSpec.ConfigValue<Integer> minCaveinDurationSeconds;
     public final ForgeConfigSpec.ConfigValue<Integer> maxCaveinDurationSeconds;
 
-    public final ForgeConfigSpec.ConfigValue<Double> relativeShakeMovement;
+    public final ForgeConfigSpec.ConfigValue<Double> relativeShakeAmount;
 
 
     public CommonConfig(ForgeConfigSpec.Builder builder) {
@@ -29,6 +31,16 @@ public class CommonConfig {
                 .comment("Integer or int value of radius that cave in occurs in (unit of blocks)")
                 .translation(Cavein.MODID + ".config." + "caveinRadius")
                 .define("caveinRadius", 32);
+
+        caveinHeightBelow = builder
+                .comment("Integer or int value of how many blocks below the player to search for cave-able blocks")
+                .translation(Cavein.MODID + ".config." + "caveinHeightBelow")
+                .define("caveinHeightBelow", 4);
+
+        caveinHeightAbove = builder
+                .comment("Integer or int value of how many blocks above the player to search for cave-able blocks")
+                .translation(Cavein.MODID + ".config." + "caveinHeightAbove")
+                .define("caveinHeightAbove", 20);
 
         secondsToCavein = builder
                 .comment("Integer or int value for number of seconds until a cave-in can randomly occur per player")
@@ -56,10 +68,10 @@ public class CommonConfig {
                 .translation(Cavein.MODID + ".config." + "maxCaveinDurationSeconds")
                 .define("maxCaveinDurationSeconds", 60);
 
-        relativeShakeMovement = builder
+        relativeShakeAmount = builder
                 .comment("Double or decimal value of how much a player should shake during a cave in (only adjusts the player's position)")
-                .translation(Cavein.MODID + ".config." + "relativeShakeMovement")
-                .define("relativeShakeMovement", 0.35);
+                .translation(Cavein.MODID + ".config." + "relativeShakeAmount")
+                .define("relativeShakeAmount", 0.75);
 
         builder.pop();
     }

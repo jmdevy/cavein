@@ -24,9 +24,6 @@ import java.util.Vector;
 public class Server {
     private static Random random = new Random(System.currentTimeMillis());
 
-    private static final int caveinSizeAbove = 16;   // Just below the Y position the cave in starts at
-    private static final int caveinSizeBelow = 4;   // Just below the Y position the cave in starts at
-
     private static long lastCaveinTickCount = 0;    // General timer
     private static long currentCaveinTickCount = 0; // General timer
 
@@ -123,7 +120,7 @@ public class Server {
                         double distance = player.distanceTo(entity);
                         Cavein.LOGGER.debug(String.valueOf(distance));
                         if(distance < 10.0){
-                            MessageRegistration.channel.send(PacketDistributor.PLAYER.with(() -> player), new ToClientMessageShake(true));
+                            MessageRegistration.channel.send(PacketDistributor.PLAYER.with(() -> player), new ToClientMessageShake(true, CommonConfigHandler.COMMON_CONFIG.relativeShakeAmount.get()));
                         }
                     }
                 }
@@ -139,11 +136,11 @@ public class Server {
                 double r = CommonConfigHandler.COMMON_CONFIG.caveinRadius.get() * Math.sqrt(random.nextFloat());
                 double theta = random.nextFloat() * 2 * Math.PI;
                 int x = (int)(caveinOrigin.x + r * Math.cos(theta));
-                int y = ((int)caveinOrigin.y) - caveinSizeBelow;
+                int y = ((int)caveinOrigin.y) - CommonConfigHandler.COMMON_CONFIG.caveinHeightBelow.get();
                 int z = (int)(caveinOrigin.z + r * Math.sin(theta));
 
                 // Search bottom to top of cave in circle for blocks that have air or water under them
-                for(int iyx=0; iyx<caveinSizeBelow+caveinSizeAbove; iyx++){
+                for(int iyx=0; iyx<CommonConfigHandler.COMMON_CONFIG.caveinHeightBelow.get()+CommonConfigHandler.COMMON_CONFIG.caveinHeightAbove.get(); iyx++){
                     if(iyx+y < CommonConfigHandler.COMMON_CONFIG.maxCaveinYLevel.get()) {
                         BlockPos block = new BlockPos(x, iyx + y, z);
                         String blockStr = event.getServer().overworld().getBlockState(block).getBlock().toString();
