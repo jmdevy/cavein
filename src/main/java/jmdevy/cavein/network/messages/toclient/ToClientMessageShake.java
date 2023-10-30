@@ -5,7 +5,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraftforge.network.NetworkContext;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.event.network.CustomPayloadEvent;
 
 import java.util.function.Supplier;
 
@@ -23,8 +25,10 @@ public class ToClientMessageShake {
      * Called when a message is received of the appropriate type.
      * CALLED BY THE NETWORK THREAD, NOT THE CLIENT THREAD
      */
-    public static void onMessageReceived(final ToClientMessageShake message, Supplier<NetworkEvent.Context> ctxSupplier) {
-        NetworkEvent.Context ctx = ctxSupplier.get();
+    // Looks like most stuff moved to https://github.com/MinecraftForge/MinecraftForge/blob/7a443276a503b280cda3fd824c8e59938f113dbe/src/main/java/net/minecraftforge/event/network/CustomPayloadEvent.java#L103
+    // for 1.20
+    public static void onMessageReceived(final ToClientMessageShake message, Supplier<CustomPayloadEvent.Context> ctxSupplier) {
+        CustomPayloadEvent.Context ctx = ctxSupplier.get();
         LogicalSide sideReceived = ctx.getDirection().getReceptionSide();
         ctx.setPacketHandled(true);
 

@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.item.FallingBlockEntity;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
-@Mod.EventBusSubscriber(modid = Cavein.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.DEDICATED_SERVER)
+//@Mod.EventBusSubscriber(modid = Cavein.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.DEDICATED_SERVER)
 public class Server {
     private static Random random = new Random(System.currentTimeMillis());
 
@@ -44,7 +44,9 @@ public class Server {
     private static int caveinDurationSeconds = 0;
 
     @SubscribeEvent
-    public static void update(TickEvent.ServerTickEvent event) {
+    public static void update(TickEvent.ServerTickEvent event){
+        Cavein.LOGGER.debug("3 seconds");
+
         if(whitelistedBlocks == null){
             String whitelistedBlocksStr = CommonConfigHandler.COMMON_CONFIG.whitelistedBlocks.get();
             whitelistedBlocksStr = whitelistedBlocksStr.substring(1, whitelistedBlocksStr.length()-1);
@@ -119,7 +121,8 @@ public class Server {
                         ServerPlayer player = players.get(ipx);
                         double distance = player.distanceTo(entity);
                         if(distance < 10.0){
-                            MessageRegistration.channel.send(PacketDistributor.PLAYER.with(() -> player), new ToClientMessageShake(true, CommonConfigHandler.COMMON_CONFIG.relativeShakeAmount.get()));
+                            // TODO: FIX THIS
+//                            MessageRegistration.channel.send(PacketDistributor.PLAYER.with(() -> player), new ToClientMessageShake(true, CommonConfigHandler.COMMON_CONFIG.relativeShakeAmount.get()));
                         }
                     }
                 }
@@ -146,13 +149,15 @@ public class Server {
                             String blockStr = event.getServer().overworld().getBlockState(block).getBlock().toString();
 
                             BlockPos blockBelow = new BlockPos(x, iyx + y - 1, z);
-                            Material blockBelowMat = event.getServer().overworld().getBlockState(blockBelow).getMaterial();
 
-                            if (checkIfWhitelisted(blockStr) && (blockBelowMat == Material.AIR || blockBelowMat == Material.WATER)) {
-                                FallingBlockEntity entity = FallingBlockEntity.fall(event.getServer().overworld(), block, event.getServer().overworld().getBlockState(block));
-                                entities.add(entity);
-                                break;
-                            }
+                            // TODO: have to fix this
+//                            Material blockBelowMat = event.getServer().overworld().getBlockState(blockBelow).getMaterial();
+//
+//                            if (checkIfWhitelisted(blockStr) && (blockBelowMat == Material.AIR || blockBelowMat == Material.WATER)) {
+//                                FallingBlockEntity entity = FallingBlockEntity.fall(event.getServer().overworld(), block, event.getServer().overworld().getBlockState(block));
+//                                entities.add(entity);
+//                                break;
+//                            }
                         } else {
                             // Went above limit, stop searching
                             break;
