@@ -38,3 +38,5 @@ Configuration
 By default, there is a 1 in 30 chance that a cave in will occur every 5 minutes for a single player in the overworld. Cave ins will only occur below Y level 50 and only whitelisted common blocks like stone, granite, dirt, etc. will fall.
 
 Most features of this mod can be adjusted in the config file located at .minecraft/config/cavein-common.toml.
+
+Thanks for checking this out!
