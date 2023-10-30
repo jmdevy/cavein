@@ -2,6 +2,7 @@ package jmdevy.cavein;
 
 import com.mojang.logging.LogUtils;
 import jmdevy.cavein.config.CommonConfigHandler;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -19,5 +20,6 @@ public class Cavein {
     public Cavein() {
         LOGGER.debug("Cave in mod loaded!");
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfigHandler.COMMON_CONFIG_SPEC);
+        MinecraftForge.EVENT_BUS.register(Server.class);
     }
 }

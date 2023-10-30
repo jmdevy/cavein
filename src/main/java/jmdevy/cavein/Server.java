@@ -6,6 +6,7 @@ import jmdevy.cavein.network.messages.toclient.ToClientMessageShake;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.Vec3;
@@ -20,7 +21,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Vector;
 
-@Mod.EventBusSubscriber(modid = Cavein.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.DEDICATED_SERVER)
 public class Server {
     private static Random random = new Random(System.currentTimeMillis());
 
@@ -114,6 +114,7 @@ public class Server {
                     entities.remove(iex);
 
                     // Check if any player is within range to be shaken by block falling
+                    // or to be hurt
                     List<ServerPlayer> players = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers();
                     for(int ipx=0; ipx<players.size(); ipx++) {
                         ServerPlayer player = players.get(ipx);
