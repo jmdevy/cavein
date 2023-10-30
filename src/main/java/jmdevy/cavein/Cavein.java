@@ -20,6 +20,8 @@ public class Cavein {
     public Cavein() {
         LOGGER.debug("Cave in mod loaded!");
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, CommonConfigHandler.COMMON_CONFIG_SPEC);
+
+        // Instead of using decorator, register like this so that it's used on client?
         MinecraftForge.EVENT_BUS.register(Server.class);
     }
 }

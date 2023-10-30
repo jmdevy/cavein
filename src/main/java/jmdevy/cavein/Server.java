@@ -4,6 +4,7 @@ import jmdevy.cavein.config.CommonConfigHandler;
 import jmdevy.cavein.network.MessageRegistration;
 import jmdevy.cavein.network.messages.toclient.ToClientMessageShake;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.item.FallingBlockEntity;
@@ -45,8 +46,6 @@ public class Server {
 
     @SubscribeEvent
     public static void update(TickEvent.ServerTickEvent event){
-        Cavein.LOGGER.debug("3 seconds");
-
         if(whitelistedBlocks == null){
             String whitelistedBlocksStr = CommonConfigHandler.COMMON_CONFIG.whitelistedBlocks.get();
             whitelistedBlocksStr = whitelistedBlocksStr.substring(1, whitelistedBlocksStr.length()-1);
@@ -78,8 +77,8 @@ public class Server {
             long currentCaveinCheckSecond = currentCaveinTickCount / Cavein.ticksPerSecond;
 
             // It's been long enough according to the server config values, see if chance starts a cave-in
-            if(currentCaveinCheckSecond-lastCaveinCheckSecond > CommonConfigHandler.COMMON_CONFIG.secondsToCavein.get()){
-
+//            if(currentCaveinCheckSecond-lastCaveinCheckSecond > CommonConfigHandler.COMMON_CONFIG.secondsToCavein.get()){
+            if(currentCaveinCheckSecond-lastCaveinCheckSecond > 3){
                 // Randomly check if cave in should start, if so, change state and save some random values for later usage
                 if((int)(Math.random() * CommonConfigHandler.COMMON_CONFIG.caveinChance.get()) == 1){
                     List<ServerPlayer> players = ServerLifecycleHooks.getCurrentServer().getPlayerList().getPlayers();
@@ -149,15 +148,13 @@ public class Server {
                             String blockStr = event.getServer().overworld().getBlockState(block).getBlock().toString();
 
                             BlockPos blockBelow = new BlockPos(x, iyx + y - 1, z);
+                            boolean blockBelowSolid = event.getServer().overworld().getBlockState(blockBelow).isSolid();
 
-                            // TODO: have to fix this
-//                            Material blockBelowMat = event.getServer().overworld().getBlockState(blockBelow).getMaterial();
-//
-//                            if (checkIfWhitelisted(blockStr) && (blockBelowMat == Material.AIR || blockBelowMat == Material.WATER)) {
-//                                FallingBlockEntity entity = FallingBlockEntity.fall(event.getServer().overworld(), block, event.getServer().overworld().getBlockState(block));
-//                                entities.add(entity);
-//                                break;
-//                            }
+                            if (checkIfWhitelisted(blockStr) && blockBelowSolid == false) {
+                                FallingBlockEntity entity = FallingBlockEntity.fall(event.getServer().overworld(), block, event.getServer().overworld().getBlockState(block));
+                                entities.add(entity);
+                                break;
+                            }
                         } else {
                             // Went above limit, stop searching
                             break;
